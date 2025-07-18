@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Wonmii Blog - Intelligent Web Solutions</title>
+        <style>
+            /* Style cohérent avec le site principal */
+            .blog-container {
+                max-width: 1200px;
+                margin: 2rem auto;
+                padding: 0 1rem;
+            }
+
+            .article-card {
+                background: rgba(255,255,255,0.95);
+                border-radius: 15px;
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+                box-shadow: 0 4px 6px rgba(122,6,6,0.05);
+                transition: transform 0.3s ease;
+                cursor: pointer;
+            }
+
+            .article-card:hover {
+                transform: translateY(-3px);
+            }
+
+            .article-content {
+                display: none;
+            }
+
+            .back-button {
+                background: #7a0606;
+                color: white;
+                padding: 0.8rem 1.5rem;
+                border-radius: 25px;
+                text-decoration: none;
+                display: inline-block;
+                margin-bottom: 2rem;
+            }
+
+            .loading {
+                text-align: center;
+                padding: 2rem;
+                color: #7a0606;
+            }
+
+            .article-date {
+                color: #6c757d;
+                font-size: 0.9rem;
+            }
+
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                .blog-container {
+                    padding: 0 0.5rem;
+                }
+                
+                .article-card {
+                    padding: 1rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="blog-container">
+            <a href="#" class="back-button" id="backButton" style="display: none;"></a>
+            <div id="articleList"></div>
+            <div id="articleContent" class="article-content"></div>
+            <div id="loading" class="loading"></div>
+        </div>
+
+    <script>
+        const lang = new URLSearchParams(window.location.search).get('lang') || 'en';
+        const translations = {
+            back: { en: 'Back to Articles', fr: 'Retour aux articles' },
+            loading: { en: 'Loading articles...', fr: 'Chargement des articles...' },
+            error: { en: 'Error loading content', fr: 'Erreur de chargement' }
+        };
+
+        document.getElementById('loading').textContent = translations.loading[lang];
+        
+        // Worker Cloudflare endpoint
+        const BLOG_WORKER_URL = 'https://blog-airtable.mitshi.workers.dev';
+
+        async function loadContent() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const articleId = urlParams.get('id');
+            const slug = urlParams.get('slug');
+
+            try {
+                let apiUrl = BLOG_WORKER_URL;
+                if(articleId && slug) {
+                    apiUrl += `?id=${articleId}&slug=${slug}&lang=${lang}`;
+                } else {
+                    apiUrl += `?lang=${lang}`;
+                }
+
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                if(articleId && slug) {
+                    showArticle(data);
+                } else {
+                    showArticleList(data);
+                }
+            } catch (error) {
+                document.getElementById('loading').textContent = translations.error[lang];
+                console.error('Fetch error:', error);
+            }
+        }
+
+        function showArticleList(articles) {
+            const listContainer = document.getElementById('articleList');
+            listContainer.innerHTML = articles.map(article => `
+                <div class="article-card" data-id="${article.id}" data-slug="${article.slug}">
+                    <h2>${article.title}</h2>
+                    <div class="article-date">${new Date(article.date).toLocaleDateString(lang)}</div>
+                    <p>${article.excerpt}</p>
+                </div>
+            `).join('');
+
+            document.querySelectorAll('.article-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const id = card.dataset.id;
+                    const slug = card.dataset.slug;
+                    window.history.pushState({}, '', `blog.html?id=${id}&slug=${slug}&lang=${lang}`);
+                    loadContent();
+                });
+            });
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('backButton').style.display = 'none';
+            document.getElementById('articleContent').style.display = 'none';
+            document.getElementById('articleList').style.display = 'block';
+        }
+
+        function showArticle(article) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('articleList').style.display = 'none';
+            document.getElementById('articleContent').style.display = 'block';
+            document.getElementById('backButton').style.display = 'inline-block';
+            
+            document.getElementById('articleContent').innerHTML = `
+                <h1>${article.title}</h1>
+                <div class="article-date">${new Date(article.date).toLocaleDateString(lang)}</div>
+                <div class="article-body">${article.content}</div>
+            `;
+        }
+
+        // Gestion du bouton retour
+        document.getElementById('backButton').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.history.pushState({}, '', `blog.html?lang=${lang}`);
+            loadContent();
+        });
+
+        // Gestion du changement d'état
+        window.addEventListener('popstate', () => {
+            loadContent();
+        });
+
+        // Initial load
+        loadContent();
+        document.getElementById('backButton').textContent = translations.back[lang];
+    </script>
+
+    </body>
+</html>
