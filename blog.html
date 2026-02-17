@@ -82,7 +82,7 @@
         document.getElementById('loading').textContent = translations.loading[lang];
         
         // Worker Cloudflare endpoint
-        const BLOG_WORKER_URL = 'https://blog-airtable.mitshi.workers.dev';
+        const BLOG_WORKER_URL = 'https://blog-airtable.workers.dev';
 
         async function loadContent() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -167,4 +167,5 @@
     </script>
 
     </body>
+
 </html>
