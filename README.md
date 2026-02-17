@@ -11,7 +11,7 @@ Auto-Blog est conçu comme une **application monopage (SPA)**. Il offre une exp�
 Le cœur du projet repose sur trois éléments :
 
 1.  **Front-end Statique** : Le fichier `blog.html` contient toute la structure, le style et la logique de l'interface. Il est hébergeable n'importe où (GitHub Pages, Netlify, serveur classique).
-2.  **API Back-end (Headless)** : L'application se connecte à un Worker Cloudflare (`blog-airtable.mitshi.workers.dev`) qui fait office d'API. Ce worker récupère les articles depuis une base de données (probablement Airtable).
+2.  **API Back-end (Headless)** : L'application se connecte à un Worker Cloudflare (`blog-airtable.workers.dev`) qui fait office d'API. Ce worker récupère les articles depuis une base de données (probablement Airtable).
 3.  **Routage Dynamique** : La navigation est gérée en JavaScript. L'URL change via `pushState` pour refléter l'article consulté (ex: `blog.html?id=123&slug=mon-article&lang=fr`), mais la page ne se recharge pas.
 
 ## 🚀 Fonctionnalités
