@@ -1,54 +1,59 @@
-# Auto-Blog - Interface de Blog Headless
+# Auto-Blog – Interface de blog headless automatisée ( Cloudflare/Make/Airtable )
 
-Bienvenue sur **Auto-Blog**, une interface de blog dynamique, légère et moderne. Ce projet est une page web statique unique (`blog.html`) qui agit comme un client pour une API distante, affichant et gérant des articles de blog de manière fluide.
+Bienvenue sur **Auto-Blog**, une interface de blog dynamique, légère et moderne, entièrement automatisée. Ce projet combine une page web statique unique (`blog.html`) avec une pipeline d'automatisation qui récupère, stocke et affiche des articles sans aucune intervention manuelle.
+
+---
 
 ## ✨ Aperçu
 
-Auto-Blog est conçu comme une **application monopage (SPA)**. Il offre une expérience de navigation rapide et interactive, sans rechargement de page, en s'appuyant sur du JavaScript moderne et une architecture découplée.
+Auto-Blog est conçu comme une **application monopage (SPA)** qui s'appuie sur une architecture headless. Les articles sont automatiquement collectés via **Make (ex-Integromat)** , stockés dans **Airtable**, puis servis par une **API Cloudflare Worker** pour être affichés en temps réel sur le blog.
 
-## 🛠️ Comment ça fonctionne ?
+---
 
-Le cœur du projet repose sur trois éléments :
+## 🔄 Flux de données automatisé
 
-1.  **Front-end Statique** : Le fichier `blog.html` contient toute la structure, le style et la logique de l'interface. Il est hébergeable n'importe où (GitHub Pages, Netlify, serveur classique).
-2.  **API Back-end (Headless)** : L'application se connecte à un Worker Cloudflare (`blog-airtable.workers.dev`) qui fait office d'API. Ce worker récupère les articles depuis une base de données (probablement Airtable).
-3.  **Routage Dynamique** : La navigation est gérée en JavaScript. L'URL change via `pushState` pour refléter l'article consulté (ex: `blog.html?id=123&slug=mon-article&lang=fr`), mais la page ne se recharge pas.
-
-## 🚀 Fonctionnalités
-
-*   **Affichage de la liste des articles** : Récupère et affiche les titres, extraits et dates depuis l'API.
-*   **Consultation d'un article détaillé** : Affiche le contenu complet d'un article en fonction des paramètres `id` et `slug` dans l'URL.
-*   **Navigation fluide** : Charge le contenu dynamiquement sans rechargement de page (AJAX).
-*   **Bouton de retour fonctionnel** : Permet de revenir à la liste des articles sans perdre l'état de l'application.
-*   **Support multilingue intégré** : Change la langue de l'interface et le format des dates via le paramètre `lang` (fr/en).
-*   **Design responsive et moderne** : S'adapte aux mobiles et tablettes avec une interface épurée et des interactions au survol.
-*   **Gestion des erreurs et chargement** : Affiche des messages appropriés pendant le chargement ou en cas d'erreur réseau.
-
-## 📁 Structure du projet
-
-Le projet se compose d'un seul fichier :
-
-Auto-Blog/
-└── blog.html # L'application de blog complète (HTML, CSS, JS)
+Make (scénarios) → Airtable (base de données) → Cloudflare Worker (API) → blog.html (front-end)
 
 
+1. **Make** récupère périodiquement des articles depuis diverses sources (RSS, scraping, autres APIs).
+2. **Airtable** stocke les articles avec leurs métadonnées (titre, contenu, date, slug, langue).
+3. **Cloudflare Worker** interroge Airtable et expose une API REST propre pour le front-end.
+4. **blog.html** appelle cette API et affiche les articles dynamiquement.
 
-## ⚙️ Installation et utilisation
+---
 
-1.  **Téléchargez** le fichier `blog.html`.
-2.  **Hébergez-le** sur n'importe quel serveur web statique (ou même en local).
-3.  **Accédez-y** via votre navigateur.
+## 🛠️ Architecture technique
 
-L'application est immédiatement fonctionnelle, à condition que le Worker Cloudflare (`https://blog-airtable.workers.dev`) soit en ligne et accessible.
+### Front-end (SPA statique)
+- Fichier unique `blog.html` (HTML, CSS, JavaScript vanilla)
+- Routage côté client via `pushState` pour des URLs uniques par article
+- Support multilingue (fr/en) intégré
+- Design responsive sans framework externe
 
-## 🧩 Personnalisation
+### Back-end headless
+- **API** : Cloudflare Worker (JavaScript) – endpoint configurable
+- **Base de données** : Airtable (structure simple : titres, contenus, dates, slugs)
+- **Automatisation** : Make (scénarios planifiés pour l'import d'articles)
 
-Vous pouvez adapter ce blog à vos propres besoins :
+---
 
-*   **Changer la source de données** : Modifiez la constante `BLOG_WORKER_URL` dans le JavaScript pour pointer vers votre propre API.
-*   **Modifier le design** : Adaptez le style CSS dans la balise `<style>` pour l'accorder à votre charte graphique.
-*   **Ajouter des langues** : Étendez l'objet `translations` pour supporter de nouvelles langues.
+## ✨ Fonctionnalités
 
-## ☁️ Dépendance
+- **Affichage liste/articles** : Récupération automatique des derniers articles depuis l'API
+- **Consultation détaillée** : Affichage d'un article complet via URL paramétrée (`?id=...&slug=...`)
+- **Navigation fluide** : Chargement AJAX sans rechargement de page
+- **Bouton de retour** : Navigation intuitive entre liste et article
+- **Multilingue** : Interface et dates localisées (français/anglais)
+- **Responsive** : Adaptation mobile/tablette/desktop
+- **Indicateurs de chargement** : Feedback utilisateur pendant les appels API
+- **Mise à jour automatique** : Les nouveaux articles apparaissent dès leur import par Make
 
-La seule dépendance de ce projet est l'API back-end. Assurez-vous que l'URL du Worker Cloudflare est correcte et que le service est opérationnel pour que le blog fonctionne.
+---
+
+## 🗂️ Structure du projet
+
+auto-blog/
+├── blog.html # Application monopage complète
+├── Make scenarios/ # (hors dépôt) Scénarios d'automatisation
+├── Airtable base/ # (hors dépôt) Structure de la base
+└── Cloudflare Worker/ # (hors dépôt) Code de l'API
